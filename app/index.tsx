@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import Auth from '@/components/Auth';
 // import Account from './components/Account'
 import { Session } from '@supabase/supabase-js'
+import { router } from 'expo-router';
 
 export default function TabOneScreen() {
   const [session, setSession] = useState<Session | null>(null)
@@ -21,13 +22,16 @@ export default function TabOneScreen() {
       setSession(session)
     })
   }, [])
+
+  useEffect(() => {
+    if(session && session.user && session.user.id) {
+      router.push('/joinRoom')
+    }
+  }, [session])
+
   return (
     <View>
       <Auth />
-      {session && session.user && <Text>{session.user.id}</Text>}
-      <Link href={"/chat/"}>
-        <Text style={styles.title}>Tab One</Text>
-      </Link>
     </View>
   );
 }
