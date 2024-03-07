@@ -11,15 +11,38 @@ import { useProfileStore } from '@/stores/profileStore'
 
 const joinRoom = () => {
 
-  const [displayName, setDisplayName] = useState('')
   const userId = useProfileStore(state => state.id)
   const setProfile = useProfileStore(state => state.setProfile)
+  const profile = useProfileStore(state => state.profile)
+  const [displayName, setDisplayName] = useState(profile.displayname)
 
   useEffect(() => {
     if (userId == '') {
       router.push('/')
     }
-  },[userId])
+    else{
+      fetchProfile()
+    }
+    
+  }, [userId])
+
+  const fetchProfile = async () => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('displayname, imageurl')
+      .eq('id', userId)
+    if (error) {
+      console.log(error)
+    }
+    else {
+      if (data.length > 0) {
+        setProfile({
+          displayname: data[0].displayname,
+          imageurl: data[0].imageurl,
+        })
+      }
+    }
+  }
 
   const updateDisplayName = async () => {
     setProfile({
