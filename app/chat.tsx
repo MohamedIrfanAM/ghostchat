@@ -17,7 +17,7 @@ const index = () => {
   const guestId = useGuestStore(state => state.guestId)
   // const profile = useProfileStore(state => state.profile)
   const roomId = useGuestStore(state => state.roomId)
-  const [guestProfile, setGuestProfile] = useState<profile>({ displayname: '', imageurl: '' })
+  const { guestProfile, setGuestProfile } = useGuestStore((state) => ({guestProfile: state.profile, setGuestProfile: state.setProfile}))
 
   const deleteQueueEntry = async (id: string) => {
     const { data, error } = await supabase
@@ -51,7 +51,7 @@ const index = () => {
     console.log('GuestId: ' + data[0].userID)
     setGuestProfile(profile)
     setGuestId(data[0].userID)
-    // deleteQueueEntry(data[0].userID)
+    deleteQueueEntry(data[0].userID)
   }
 
 
