@@ -6,7 +6,7 @@ import { StyleSheet } from 'react-native'
 import { TextInput } from 'react-native'
 import { Button } from 'react-native-elements'
 import { supabase } from '@/lib/supabase'
-import { useProfileStore } from '@/stores/profileStore'
+import { useGuestStore, useProfileStore } from '@/stores/profileStore'
 
 
 const joinRoom = () => {
@@ -15,15 +15,16 @@ const joinRoom = () => {
   const setProfile = useProfileStore(state => state.setProfile)
   const profile = useProfileStore(state => state.profile)
   const [displayName, setDisplayName] = useState(profile.displayname)
+  const setRoomId = useGuestStore(state => state.setRoomId)
 
   useEffect(() => {
     if (userId == '') {
       router.push('/')
     }
-    else{
+    else {
       fetchProfile()
     }
-    
+
   }, [userId])
 
   const fetchProfile = async () => {
@@ -64,6 +65,29 @@ const joinRoom = () => {
 
   const joinQueue = async () => {
     await updateDisplayName()
+    setRoomId(-1)
+    const changes = supabase
+      .channel('table-filter-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'queue',
+          filter: `userID=eq.${userId}`,
+        },
+        (payload) => {
+          console.log(payload)
+          const roomId = payload?.new?.roomID
+          const state = payload?.new?.state
+          if (roomId !== null) {
+            setRoomId(roomId)
+            console.log(roomId)
+          }
+        }
+      ).subscribe()
+
+
     const { error } = await supabase
       .from('queue')
       .upsert([
@@ -72,6 +96,13 @@ const joinRoom = () => {
           roomID: null,
         }
       ], { onConflict: 'userID' })
+
+   const {data} = await supabase.from('queue').select('roomID').eq('userID', userId)
+    if(data && data.length > 0) {
+      if(data[0].roomID != null) {
+        setRoomId(data[0].roomID)
+        }
+    }
     if (error) {
       console.log(error)
     }
