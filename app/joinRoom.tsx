@@ -40,6 +40,7 @@ const joinRoom = () => {
           displayname: data[0].displayname,
           imageurl: data[0].imageurl,
         })
+        setDisplayName(data[0].displayname)
       }
     }
   }
@@ -75,7 +76,7 @@ const joinRoom = () => {
       console.log(error)
     }
     else {
-      router.push('/chat')
+      router.replace('/chat')
     }
 
   }

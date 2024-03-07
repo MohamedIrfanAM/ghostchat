@@ -1,40 +1,32 @@
 import { supabase } from '@/lib/supabase';
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { GiftedChat, IMessage } from 'react-native-gifted-chat'
+import { useProfileStore } from '@/stores/profileStore'
+import { RealtimeChannel } from '@supabase/supabase-js';
+import { router } from 'expo-router';
 
 
 const index = () => {
   const [messages, setMessages] = useState<IMessage[]>([])
   const messageId = useRef(0)
-  const userId = '1ddfad57-f13d-4b7a-b82a-1c71b345d5be'
-
-  const sendMessage = async (message: string) => {
-    if (!message) return;
-
-    try {
-      const channel = supabase.channel('room-1');
-      await channel.send({
-        type: 'broadcast',
-        event: 'send',
-        payload: { message },
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const userId = useProfileStore(state => state.id)
+  const profile = useProfileStore(state => state.profile)
+  const [roomID, setRoomID] = useState('')
 
   const deleteQueueEntry = async () => {
     const { data, error } = await supabase
       .from('queue')
       .delete()
       .eq('userID', userId)
-    if(error){
+    if (error) {
       console.log(error)
     }
   }
 
   useEffect(() => {
-    const channel = supabase.channel('room-1');
+    if (userId == '') {
+      router.replace('/')
+    }
     const changes = supabase
       .channel('table-filter-changes')
       .on(
@@ -47,42 +39,64 @@ const index = () => {
         },
         (payload) => {
           const roomId = payload?.new?.roomID
-          if(roomId !== null){
+          if (roomId !== null) {
+            setRoomID(roomId)
             deleteQueueEntry()
           }
-          console.log(roomId)
         }
       )
       .subscribe()
-
-    const messageReceived = (payload: any) => {
-      const newMessage: IMessage = {
-        _id: messageId.current,
-        text: payload?.payload?.message,
-        createdAt: new Date(),
-        user: {
-          _id: 2,
-          name: 'React Native',
-          avatar: 'https://placeimg.com/140/140/any',
-        },
-      }
-
-      setMessages((prevMessages) => [newMessage, ...prevMessages]);
-      messageId.current += 1
-    };
-    channel.on('broadcast', { event: 'recieve' }, messageReceived).subscribe();
-
-    return () => {
-      channel.unsubscribe();
-    };
   }, []);
+
+  useEffect(() => {
+    if (roomID !== '') {
+      const channel = supabase.channel('room-' + roomID)
+      const messageReceived = (payload: any) => {
+        const newMessage: IMessage = {
+          _id: messageId.current,
+          text: payload?.payload?.message,
+          createdAt: new Date(),
+          user: {
+            _id: 2,
+            name: 'React Native',
+            avatar: 'https://placeimg.com/140/140/any',
+          },
+        }
+        setMessages((prevMessages) => [newMessage, ...prevMessages]);
+        messageId.current += 1
+      };
+
+      channel.on('broadcast', { event: 'send' }, messageReceived).subscribe();
+
+      return () => {
+        channel.unsubscribe();
+      };
+    }
+  }, [roomID]);
+
+  const sendMessage = async (message: string) => {
+    if (!message || roomID == '') {
+      console.log('no message or roomID')
+      return;
+    }
+    const channel = supabase.channel('room-' + roomID)
+    try {
+      await channel.send({
+        type: 'broadcast',
+        event: 'receive',
+        payload: { message },
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const onSend = useCallback((messages: IMessage[] = []) => {
     sendMessage(messages[0].text)
     setMessages(previousMessages =>
       GiftedChat.append(previousMessages, messages),
     )
-  }, [])
+  }, [roomID])
 
   return (
     <GiftedChat
