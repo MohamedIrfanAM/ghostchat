@@ -1,3 +1,4 @@
+import { router } from 'expo-router'
 import { Text, View } from '@/components/Themed'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -33,7 +34,13 @@ const joinRoom = () => {
           roomID: null,
         }
       ],{onConflict: 'userID'})
-    console.log(error)
+    if(error){
+      console.log(error)
+    }
+    else{
+      router.push('/chat')
+    }
+
   }
 
   return (
