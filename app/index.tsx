@@ -6,12 +6,13 @@ import 'react-native-url-polyfill/auto'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase';
 import Auth from '@/components/Auth';
-// import Account from './components/Account'
 import { Session } from '@supabase/supabase-js'
 import { router } from 'expo-router';
+import {useProfileStore} from '../stores/profileStore'
 
 export default function TabOneScreen() {
   const [session, setSession] = useState<Session | null>(null)
+  const setId = useProfileStore(state => state.setId)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -25,6 +26,7 @@ export default function TabOneScreen() {
 
   useEffect(() => {
     if(session && session.user && session.user.id) {
+      setId(session?.user?.id)
       router.push('/joinRoom')
     }
   }, [session])
