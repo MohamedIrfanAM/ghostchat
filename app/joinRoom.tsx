@@ -1,23 +1,36 @@
 import { router } from 'expo-router'
 import { Text, View } from '@/components/Themed'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import {StyleSheet} from 'react-native'
+import { StyleSheet } from 'react-native'
 import { TextInput } from 'react-native'
 import { Button } from 'react-native-elements'
 import { supabase } from '@/lib/supabase'
+import { useProfileStore } from '@/stores/profileStore'
 
 
 const joinRoom = () => {
 
   const [displayName, setDisplayName] = useState('')
-  const userId = '1ddfad57-f13d-4b7a-b82a-1c71b345d5be'
+  const userId = useProfileStore(state => state.id)
+  const setProfile = useProfileStore(state => state.setProfile)
+
+  useEffect(() => {
+    if (userId == '') {
+      router.push('/')
+    }
+  },[userId])
 
   const updateDisplayName = async () => {
+    setProfile({
+      displayname: displayName,
+      imageurl: '',
+    })
     const { error } = await supabase
       .from('profiles')
       .update([
-        { id: userId,
+        {
+          id: userId,
           displayname: displayName,
         }
       ])
@@ -30,14 +43,15 @@ const joinRoom = () => {
     const { error } = await supabase
       .from('queue')
       .upsert([
-        { userID: userId,
+        {
+          userID: userId,
           roomID: null,
         }
-      ],{onConflict: 'userID'})
-    if(error){
+      ], { onConflict: 'userID' })
+    if (error) {
       console.log(error)
     }
-    else{
+    else {
       router.push('/chat')
     }
 
@@ -46,9 +60,9 @@ const joinRoom = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Join Room</Text>
-      <View style={styles.separator}/>
+      <View style={styles.separator} />
       <TextInput placeholder="Display Name" onChangeText={(text) => setDisplayName(text)} value={displayName} />
-      <Button title="Join Room" onPress={() => joinQueue()}  />
+      <Button title="Join Room" onPress={() => joinQueue()} />
     </SafeAreaView>
   )
 }
