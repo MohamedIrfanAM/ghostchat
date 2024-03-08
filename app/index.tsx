@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-import { Text, View } from '@/components/Themed';
+import { Text, View } from 'react-native'
 import { Link } from 'expo-router';
 import 'react-native-url-polyfill/auto'
 import { useState, useEffect } from 'react'
