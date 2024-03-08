@@ -4,7 +4,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { Text, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { useGuestStore } from '@/stores/profileStore';
 import { Avatar } from 'react-native-elements';
 
@@ -84,6 +84,21 @@ function RootLayoutNav() {
                 <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{guestProfile.displayname}</Text>
               </View>
             )
+          },
+          headerRight: () => {
+            if (guestProfile.displayname == '') return <View></View>
+            return (
+              <View >
+                <TouchableOpacity onPress={() => console.log('settings')} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Skip</Text>
+                  <FontAwesome.Button
+                    name="sign-out"
+                    backgroundColor="transparent"
+                    color="black"
+                    onPress={() => console.log('sign out')}
+                  />
+                </TouchableOpacity>
+              </View>)
           },
         }} />
       </Stack>
