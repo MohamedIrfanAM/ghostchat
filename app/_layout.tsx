@@ -58,7 +58,49 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const userId = useProfileStore(state => state.id)
 
+  const validateSkipCount = async () => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('skipCount, skipDay')
+      .eq('id', userId)
+    if (error) {
+      console.log(error)
+    }
+    console.log(data)
+    const today = new Date().toLocaleDateString('en-CA')
+    console.log(today)
+
+    if(data && data.length > 0) {
+      if(data[0].skipDay === today) {
+        console.log('skipDay is today')
+        if(data[0].skipCount >= 5) {
+          Toast.show({
+            type: 'error',
+            text1: 'You have reached the maximum number of skips for today',
+            position: 'bottom',
+          });
+          return false
+        }
+      }
+      return data[0].skipCount
+    }
+  }
+
+  const incrementSkipCount = async (prevCount:number) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ skipCount: prevCount + 1, skipDay: new Date().toLocaleDateString('en-CA') })
+      .eq('id', userId)
+    if (error) {
+      console.log(error)
+    }
+  }
+
   const joinQueue = async () => {
+    const prevCount = await validateSkipCount()
+    if(prevCount === false) {
+      return
+    }
     setRoomId(-1)
     setGuestProfile({
       displayname: '',
@@ -102,6 +144,7 @@ function RootLayoutNav() {
         setRoomId(data[0].roomID)
         }
     }
+    incrementSkipCount(prevCount)
     if (error) {
       console.log(error)
     }
