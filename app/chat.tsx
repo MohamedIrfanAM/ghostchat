@@ -48,7 +48,7 @@ const index = () => {
     console.log('GuestId: ' + data[0].userID)
     setGuestProfile(profile)
     setGuestId(data[0].userID)
-    deleteQueueEntry(data[0].userID)
+    // deleteQueueEntry(data[0].userID)
   }
 
 

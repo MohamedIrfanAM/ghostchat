@@ -5,8 +5,10 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { useGuestStore } from '@/stores/profileStore';
+import { useGuestStore, useProfileStore } from '@/stores/profileStore';
 import { Avatar } from 'react-native-elements';
+import { supabase } from '@/lib/supabase';
+import { router } from 'expo-router';
 
 import { useColorScheme } from '@/components/useColorScheme';
 
@@ -49,7 +51,65 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const guestProfile = useGuestStore(state => state.profile)
+  const setGuestProfile = useGuestStore(state => state.setProfile)
+  const setRoomId = useGuestStore(state => state.setRoomId)
+  const setGuestId = useGuestStore(state => state.setGuestId)
   const colorScheme = useColorScheme();
+  const userId = useProfileStore(state => state.id)
+
+  const joinQueue = async () => {
+    setRoomId(-1)
+    setGuestProfile({
+      displayname: '',
+      imageurl: '',
+    })
+    setGuestId('')
+    const changes = supabase
+      .channel('table-filter-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'queue',
+          filter: `userID=eq.${userId}`,
+        },
+        (payload) => {
+          console.log(payload)
+          const roomId = payload?.new?.roomID
+          const state = payload?.new?.state
+          if (roomId !== null) {
+            setRoomId(roomId)
+            console.log(roomId)
+          }
+        }
+      ).subscribe()
+
+
+    const { error } = await supabase
+      .from('queue')
+      .upsert([
+        {
+          userID: userId,
+          roomID: null,
+        }
+      ], { onConflict: 'userID' })
+
+   const {data} = await supabase.from('queue').select('roomID').eq('userID', userId)
+    if(data && data.length > 0) {
+      if(data[0].roomID != null) {
+        setRoomId(data[0].roomID)
+        }
+    }
+    if (error) {
+      console.log(error)
+    }
+    else {
+      router.replace('/chat')
+    }
+
+  }
+
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -89,13 +149,12 @@ function RootLayoutNav() {
             if (guestProfile.displayname == '') return <View></View>
             return (
               <View >
-                <TouchableOpacity onPress={() => console.log('settings')} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                <TouchableOpacity onPress={() => console.log('settings')} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }} onPressIn={joinQueue}>
                   <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Skip</Text>
                   <FontAwesome.Button
                     name="sign-out"
                     backgroundColor="transparent"
                     color="black"
-                    onPress={() => console.log('sign out')}
                   />
                 </TouchableOpacity>
               </View>)
