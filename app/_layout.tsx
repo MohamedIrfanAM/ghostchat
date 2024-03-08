@@ -4,9 +4,9 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import {Text} from 'react-native';
+import { Text, View } from 'react-native';
 import { useGuestStore } from '@/stores/profileStore';
-
+import { Avatar } from 'react-native-elements';
 
 import { useColorScheme } from '@/components/useColorScheme';
 
@@ -56,12 +56,35 @@ function RootLayoutNav() {
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="joinRoom" options={{ headerShown: false }} />
-        <Stack.Screen name="chat" options={{ 
-          headerShown: true ,
+        <Stack.Screen name="chat" options={{
+          headerShown: true,
           headerBackTitleVisible: false,
-          headerTitle: () => (
-            <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{guestProfile.displayname}</Text>
-          ),
+          headerTitle: () => {
+            if (guestProfile.displayname == '') return <Text style={
+              {
+                fontSize: 20,
+                fontWeight: 'bold',
+              }
+            }>Loading...</Text>
+            return (
+              <View style={
+                {
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 10,
+                }
+              }>
+                <Avatar
+                  rounded
+                  source={{
+                    uri:
+                      'https://s3.amazonaws.com/uifaces/faces/twitter/ladylexy/128.jpg',
+                  }}
+                />
+                <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{guestProfile.displayname}</Text>
+              </View>
+            )
+          },
         }} />
       </Stack>
     </ThemeProvider>
