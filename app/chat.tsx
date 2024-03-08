@@ -3,11 +3,8 @@ import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { GiftedChat, IMessage } from 'react-native-gifted-chat'
 import { useGuestStore, useProfileStore } from '@/stores/profileStore'
 import { router } from 'expo-router';
-
-// type profile = {
-//   displayname: string
-//   imageurl: string
-// }
+import { View, ActivityIndicator, Text, StyleSheet } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const index = () => {
   const [messages, setMessages] = useState<IMessage[]>([])
@@ -17,7 +14,7 @@ const index = () => {
   const guestId = useGuestStore(state => state.guestId)
   // const profile = useProfileStore(state => state.profile)
   const roomId = useGuestStore(state => state.roomId)
-  const { guestProfile, setGuestProfile } = useGuestStore((state) => ({guestProfile: state.profile, setGuestProfile: state.setProfile}))
+  const { guestProfile, setGuestProfile } = useGuestStore((state) => ({ guestProfile: state.profile, setGuestProfile: state.setProfile }))
 
   const deleteQueueEntry = async (id: string) => {
     const { data, error } = await supabase
@@ -67,7 +64,7 @@ const index = () => {
       console.log('roomId: ', roomId)
       getGuestProfile(roomId)
       console.log('create channel with userId: ', userId)
-      const channel = supabase.channel(userId) 
+      const channel = supabase.channel(userId)
       const messageReceived = (payload: any) => {
         const message = payload?.payload?.message
         const newMessage: IMessage = {
@@ -91,7 +88,7 @@ const index = () => {
         channel.unsubscribe();
       };
     }
-    else{
+    else {
       console.log('roomId is not valid')
     }
   }, [roomId]);
@@ -102,7 +99,7 @@ const index = () => {
       console.log('no message or roomID')
       return;
     }
-    console.log('create channel with guestId: '+ guestId)
+    console.log('create channel with guestId: ' + guestId)
     const channel = supabase.channel(guestId)
     try {
       await channel.send({
@@ -123,14 +120,35 @@ const index = () => {
   }, [roomId])
 
   return (
-    <GiftedChat
-      messages={messages}
-      onSend={messages => onSend(messages)}
-      user={{
-        _id: 1,
-      }}
-    />
+    <SafeAreaView style={{ flex: 1 }}>
+      {roomId == -1 ?
+        <View style={styles.container} >
+          <View>
+            <ActivityIndicator size="large" animating={roomId == -1} />
+            <Text>Waiting for guest to join</Text>
+          </View>
+        </View>
+        :
+        <GiftedChat
+          messages={messages}
+          onSend={messages => onSend(messages)}
+          user={{
+            _id: 1,
+          }}
+        />
+      }
+    </SafeAreaView>
   )
 }
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
+
 export default index
+
