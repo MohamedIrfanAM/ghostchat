@@ -1,3 +1,4 @@
+import Toast from 'react-native-toast-message';
 import { supabase } from '@/lib/supabase';
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { GiftedChat, IMessage } from 'react-native-gifted-chat'
@@ -65,6 +66,11 @@ const index = () => {
       getGuestProfile(roomId)
       console.log('create channel with userId: ', userId)
       const channel = supabase.channel(userId)
+      Toast.show({
+        type: 'success',
+        text1: 'Guest joined the room',
+        position: 'bottom',
+      });
       const messageReceived = (payload: any) => {
         const message = payload?.payload?.message
         const newMessage: IMessage = {
