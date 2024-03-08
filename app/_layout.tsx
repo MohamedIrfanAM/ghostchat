@@ -4,6 +4,9 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import {Text} from 'react-native';
+import { useGuestStore } from '@/stores/profileStore';
+
 
 import { useColorScheme } from '@/components/useColorScheme';
 
@@ -45,6 +48,7 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
+  const guestProfile = useGuestStore(state => state.profile)
   const colorScheme = useColorScheme();
 
   return (
@@ -52,7 +56,13 @@ function RootLayoutNav() {
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="joinRoom" options={{ headerShown: false }} />
-        <Stack.Screen name="chat" options={{ headerShown: true }} />
+        <Stack.Screen name="chat" options={{ 
+          headerShown: true ,
+          headerBackTitleVisible: false,
+          headerTitle: () => (
+            <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{guestProfile.displayname}</Text>
+          ),
+        }} />
       </Stack>
     </ThemeProvider>
   );

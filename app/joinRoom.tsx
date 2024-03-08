@@ -16,6 +16,7 @@ const joinRoom = () => {
   const profile = useProfileStore(state => state.profile)
   const [displayName, setDisplayName] = useState(profile.displayname)
   const setRoomId = useGuestStore(state => state.setRoomId)
+  const setGuestProfile = useGuestStore(state => state.setProfile)
 
   useEffect(() => {
     if (userId == '') {
@@ -66,6 +67,10 @@ const joinRoom = () => {
   const joinQueue = async () => {
     await updateDisplayName()
     setRoomId(-1)
+    setGuestProfile({
+      displayname: '',
+      imageurl: '',
+    })
     const changes = supabase
       .channel('table-filter-changes')
       .on(
