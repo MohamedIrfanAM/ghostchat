@@ -4,10 +4,10 @@ import { GiftedChat, IMessage } from 'react-native-gifted-chat'
 import { useGuestStore, useProfileStore } from '@/stores/profileStore'
 import { router } from 'expo-router';
 
-type profile = {
-  displayname: string
-  imageurl: string
-}
+// type profile = {
+//   displayname: string
+//   imageurl: string
+// }
 
 const index = () => {
   const [messages, setMessages] = useState<IMessage[]>([])

@@ -1,8 +1,8 @@
 import { router } from 'expo-router'
-import { Text, View } from '@/components/Themed'
+// import { Text, View } from '@/components/Themed'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { StyleSheet } from 'react-native'
+import { StyleSheet,Text, View } from 'react-native'
 import { TextInput } from 'react-native'
 import { Button } from 'react-native-elements'
 import { supabase } from '@/lib/supabase'
@@ -116,8 +116,8 @@ const joinRoom = () => {
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Join Room</Text>
       <View style={styles.separator} />
-      <TextInput placeholder="Display Name" onChangeText={(text) => setDisplayName(text)} value={displayName} />
-      <Button title="Join Room" onPress={() => joinQueue()} />
+      <TextInput placeholder="Display Name" onChangeText={(text) => setDisplayName(text)} value={displayName} style={styles.input} />
+      <Button title="Join Room" onPress={() => joinQueue()} style={styles.button}/>
     </SafeAreaView>
   )
 }
@@ -129,13 +129,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 20,
+    fontSize: 30,
     fontWeight: 'bold',
   },
   separator: {
     marginVertical: 30,
     height: 1,
     width: '80%',
+  },
+  button: {
+    width: '80%',
+    padding: 10,
+    margin: 12,
+  },
+  input: {
+    height: 50,
+    padding: 10,
+    width: '80%',
+    margin: 12,
+    borderWidth: 1,
+    textAlign: 'center',
+    borderRadius: 10,
+    fontWeight: 'bold',
+    fontSize: 20,
+    color: 'black',
   },
 });
 
